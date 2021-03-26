@@ -13,4 +13,5 @@ def preproc_udpipe(texts):
 def _preproc_udpipe(text):
     global pipeline
     sent_seg_text = pipeline.process(text)
-    return sent_seg_text.split("\n")
+    sent_seg_text = [sent.strip() for sent in sent_seg_text.split("\n") if sent.strip()]
+    return sent_seg_text
