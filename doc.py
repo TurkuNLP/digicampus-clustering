@@ -6,11 +6,13 @@ import numpy
 import sys
 import os
 import json
+import pickle
+import argparse
 import ufal.udpipe as udpipe
 import torch
 import transformers
 import requests
-
+from glob import glob
 from read import read_files
 from cluster_sentences import cluster_sentences, get_keywords
 
@@ -25,6 +27,12 @@ bert_model.eval()
 if torch.cuda.is_available():
     bert_model = bert_model.cuda()
 bert_tokenizer = transformers.BertTokenizer.from_pretrained("TurkuNLP/bert-base-finnish-cased-v1")
+
+def get_parser():
+    parser = argparse.ArgumentParser(description="The script takes in globs for json files and outputs a pickle file of the clustering results.")
+    parser.add_argument("--json-glob", type=str, required=True, help="Path to json files containing the essays.")
+    parser.add_argument("--out-pickle", type=str, required=True, help="Path to the pickle file storing the clustering results.")
+    return parser
 
 def embed(data,bert_model,how_to_pool="CLS"):
     with torch.no_grad(): #tell the model not to gather gradients
@@ -73,13 +81,15 @@ class DocCollection:
 
 
 def main():
+    args = get_parser().parse_args()
     # example
-    from glob import glob
-    files = glob("essays/essays_tilinpäätös.json")
+    files = glob(args.json_glob)
     data = read_files(files)
         
     docs = DocCollection(data)
-    print(docs.TFIDF_keywords)
+    # print(docs.TFIDF_keywords)
+    with open(args.out_pickle,"wb") as f:
+        pickle.dump([docs.TFIDF_clusters, docs.TFIDF_keywords], f)
     return 0
 
 if __name__=="__main__":
