@@ -8,7 +8,7 @@ import json
 import datetime
 import html
 import re
-
+from doc import Doc, DocCollection, load_doc_collection
 
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -17,9 +17,12 @@ app.config["APPLICATION_ROOT"] = APP_ROOT
 
 DATADIR=os.environ["DIGI_CLUSTERING_DATA"]
 
+
+
 @app.route("/")
 def index():
     #get the documents here
+    collection = load_doc_collection("delme.pickle")
     exams=[{"id":"example_exam_1"},{"id":"example_exam_2"}]
     return render_template("index.html",exams=exams,app_root=APP_ROOT)
 

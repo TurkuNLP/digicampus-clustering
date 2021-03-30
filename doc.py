@@ -85,7 +85,20 @@ def make_collection(fnames):
     docs = DocCollection(data)
     return docs
 
-    
+class CustomUnpickler(pickle.Unpickler):
+    """
+    https://medium.com/analytics-vidhya/deployment-blues-why-wont-my-flask-web-app-just-deploy-2ac9092a1b40#c18b
+    """
+    def find_class(self, module, name):
+        try:
+            return super().find_class(__name__, name)
+        except AttributeError:
+            return super().find_class(module, name)
+        
+def load_doc_collection(fname):
+    collection = CustomUnpickler(open(fname, "rb")).load()
+    return collection
+
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="The script takes in globs for json files and outputs a pickle file of the clustering results.")
     parser.add_argument("--json-glob", type=str, required=True, help="Path to json files containing the essays.")
