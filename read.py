@@ -7,6 +7,7 @@ Assumes the input to be json files
 import json
 
 def read_files(filename_lst):
+    assert filename_lst, "Got no files to read"
     all_data = []
     for fname in filename_lst:
         with open(fname, "r") as f:
