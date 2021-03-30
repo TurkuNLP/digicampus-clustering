@@ -93,8 +93,8 @@ def make_collection(fnames):
 
     
 def main():
-    init_models()
     args = get_parser().parse_args()
+    init_models()
     # example
     files = glob(args.json_glob)
     data = read_files(files)
