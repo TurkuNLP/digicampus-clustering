@@ -31,12 +31,6 @@ def init_models():
         bert_model = bert_model.cuda()
     bert_tokenizer = transformers.BertTokenizer.from_pretrained("TurkuNLP/bert-base-finnish-cased-v1")
 
-def get_parser():
-    parser = argparse.ArgumentParser(description="The script takes in globs for json files and outputs a pickle file of the clustering results.")
-    parser.add_argument("--json-glob", type=str, required=True, help="Path to json files containing the essays.")
-    parser.add_argument("--out-pickle", type=str, required=True, help="Path to the pickle file storing the clustering results.")
-    return parser
-
 def embed(data,bert_model,how_to_pool="CLS"):
     with torch.no_grad(): #tell the model not to gather gradients
         mask=data.clone().float() #
@@ -92,8 +86,12 @@ def make_collection(fnames):
     return docs
 
     
-def main():
-    args = get_parser().parse_args()
+if __name__=="__main__":
+    parser = argparse.ArgumentParser(description="The script takes in globs for json files and outputs a pickle file of the clustering results.")
+    parser.add_argument("--json-glob", type=str, required=True, help="Path to json files containing the essays.")
+    parser.add_argument("--out-pickle", type=str, required=True, help="Path to the pickle file storing the clustering results.")
+    args = parser.parse_args()
+    
     init_models()
     # example
     files = glob(args.json_glob)
@@ -102,8 +100,6 @@ def main():
     docs = DocCollection(data)
     # print(docs.TFIDF_keywords)
     with open(args.out_pickle,"wb") as f:
-        pickle.dump([docs.TFIDF_clusters, docs.TFIDF_keywords], f)
-    return 0
+        pickle.dump(docs, f)
 
-if __name__=="__main__":
-    sys.exit(main())
+    sys.exit(0)
