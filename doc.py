@@ -10,21 +10,24 @@ import ufal.udpipe as udpipe
 import torch
 import transformers
 import requests
+import tqdm
+import pickle
 
 from read import read_files
 from cluster_sentences import cluster_sentences, get_keywords
 
-# udpipe
-global model, pipeline
-model = udpipe.Model.load("fi_model.udpipe")
-pipeline = udpipe.Pipeline(model,"tokenize","none","none","horizontal")
+def init_models():
+    global model, pipeline, bert_model, bert_tokenizer
+    assert os.path.exists("fi_model.udpipe"), "You need to download the udpipe model (see readme)"
+    model = udpipe.Model.load("fi_model.udpipe")
+    pipeline = udpipe.Pipeline(model,"tokenize","none","none","horizontal")
 
-# bert
-bert_model = transformers.BertModel.from_pretrained("TurkuNLP/bert-base-finnish-cased-v1")
-bert_model.eval()
-if torch.cuda.is_available():
-    bert_model = bert_model.cuda()
-bert_tokenizer = transformers.BertTokenizer.from_pretrained("TurkuNLP/bert-base-finnish-cased-v1")
+    # bert
+    bert_model = transformers.BertModel.from_pretrained("TurkuNLP/bert-base-finnish-cased-v1")
+    bert_model.eval()
+    if torch.cuda.is_available():
+        bert_model = bert_model.cuda()
+    bert_tokenizer = transformers.BertTokenizer.from_pretrained("TurkuNLP/bert-base-finnish-cased-v1")
 
 def embed(data,bert_model,how_to_pool="CLS"):
     with torch.no_grad(): #tell the model not to gather gradients
@@ -67,19 +70,30 @@ class Doc:
 class DocCollection:
 
     def __init__(self,doc_dicts):
-        self.docs=[Doc(doc_dict) for doc_dict in doc_dicts]
+        self.docs=[Doc(doc_dict) for doc_dict in tqdm.tqdm(doc_dicts)]
+        print("Starting clustering...",file=sys.stderr)
         self.TFIDF_clusters = cluster_sentences([doc.sent_seg_text for doc in self.docs])
+        print("Done",file=sys.stderr)
         self.TFIDF_keywords = get_keywords(self.TFIDF_clusters)
 
 
+def make_collection(fnames):
+    data = read_files(fnames)
+    print("Data jsons read",file=sys.stderr)
+    docs = DocCollection(data)
+    return docs
+
+    
 def main():
+    init_models()
     # example
     from glob import glob
-    files = glob("essays/essays_tilinpäätös.json")
-    data = read_files(files)
-        
-    docs = DocCollection(data)
+    files = glob("tp.json")
+    docs=make_collection(files)
+    with open("docs.pickle","wb") as f:
+        pickle.dump(docs,f)
     print(docs.TFIDF_keywords)
+    print(docs.TFIDF_clusters)
     return 0
 
 if __name__=="__main__":
