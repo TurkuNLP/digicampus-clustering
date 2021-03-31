@@ -15,7 +15,7 @@ def get_parser():
     parser.add_argument("--num-labels", type=int, help="The number of labels to use for clustering. Default: Three times the square root of the number of sentences, rounded down.")
     return parser 
 
-def cluster_sentences(sentence_lists, num_labels=None):
+def cluster_TFIDF(sentence_lists, num_labels=None):
     sentences = [s for l in sentence_lists for s in l]
     vectorizer = TfidfVectorizer(ngram_range=(2, 5), analyzer='char_wb').fit(sentences)
     vectors = vectorizer.transform(sentences)
@@ -25,6 +25,25 @@ def cluster_sentences(sentence_lists, num_labels=None):
     # clustering_model = cluster.KMeans(n_clusters=args.num_labels, random_state=0)
 
     clusters = clustering_model.fit(vectors.toarray()).labels_
+    clustered_lists = []
+    i = 0
+    for l in sentence_lists:
+        clustered_list = []
+        for s in l:
+            clustered_list.append((s, clusters[i]))
+            i += 1
+        clustered_lists.append(clustered_list)
+
+    return clustered_lists
+
+def cluster_BERT(vector_lists, sentence_lists, num_labels=None):
+    vectors = np.array([s for l in vector_lists for s in l])
+    clustering_model = cluster.AgglomerativeClustering(n_clusters=num_labels if num_labels else 3*int(math.sqrt(len(vectors))))
+    # clustering_model = cluster.AffinityPropagation(random_state=0, damping=0.7)
+    # clustering_model = cluster.OPTICS(min_samples=2)
+    # clustering_model = cluster.KMeans(n_clusters=args.num_labels, random_state=0)
+
+    clusters = clustering_model.fit(vectors).labels_
     clustered_lists = []
     i = 0
     for l in sentence_lists:

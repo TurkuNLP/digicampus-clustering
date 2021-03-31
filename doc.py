@@ -16,7 +16,7 @@ import tqdm
 import pickle
 from glob import glob
 from read import read_files
-from cluster_sentences import cluster_sentences, get_keywords
+from cluster_sentences import cluster_TFIDF, cluster_BERT, get_keywords
 
 def init_models():
     global model, pipeline, bert_model, bert_tokenizer
@@ -69,6 +69,7 @@ class Doc:
         if len(self.sent_seg_text)==1:
             self.bert_embedded=self.bert_embedded.reshape(1, -1)
 
+
 class DocCollection:
 
     def __init__(self,doc_dicts):
@@ -77,9 +78,12 @@ class DocCollection:
         for i,d in enumerate(self.docs):
             d.id=f"answer-{str(i)}"
         print("Starting clustering...",file=sys.stderr)
-        self.TFIDF_clusters = cluster_sentences([doc.sent_seg_text for doc in self.docs])
+        self.TFIDF_clusters = cluster_TFIDF([doc.sent_seg_text for doc in self.docs])
+        self.BERT_clusters = cluster_BERT([doc.bert_embedded for doc in self.docs],
+                                               [doc.sent_seg_text for doc in self.docs])
         print("Done",file=sys.stderr)
         self.TFIDF_keywords = get_keywords(self.TFIDF_clusters)
+        self.BERT_keywords = get_keywords(self.BERT_clusters)
 
 class CustomUnpickler(pickle.Unpickler):
     """
