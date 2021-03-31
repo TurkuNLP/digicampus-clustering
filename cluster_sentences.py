@@ -25,18 +25,21 @@ def cluster_TFIDF(sentence_lists, num_labels=None):
     # clustering_model = cluster.KMeans(n_clusters=args.num_labels, random_state=0)
 
     clusters = clustering_model.fit(vectors.toarray()).labels_
+    clustered_lists = group_cluster(sentence_lists, cluster)
+    return clustered_lists # [[((index_sentence, index_token), cluster)]]
+
+def group_cluster(sentence_lists, cluster):
     clustered_lists = []
     i = 0
-    for l in sentence_lists:
+    for index_sentence, l in enumerate(sentence_lists):
         clustered_list = []
-        for s in l:
-            clustered_list.append((s, clusters[i]))
+        for index_token, s in enumerate(l):
+            clustered_list.append(((index_sentence, index_token), clusters[i]))
             i += 1
         clustered_lists.append(clustered_list)
-
     return clustered_lists
 
-def cluster_BERT(vector_lists, sentence_lists, num_labels=None):
+def cluster_BERT(vector_lists, num_labels=None):
     vectors = np.array([s for l in vector_lists for s in l])
     clustering_model = cluster.AgglomerativeClustering(n_clusters=num_labels if num_labels else 3*int(math.sqrt(len(vectors))))
     # clustering_model = cluster.AffinityPropagation(random_state=0, damping=0.7)
@@ -44,16 +47,17 @@ def cluster_BERT(vector_lists, sentence_lists, num_labels=None):
     # clustering_model = cluster.KMeans(n_clusters=args.num_labels, random_state=0)
 
     clusters = clustering_model.fit(vectors).labels_
-    clustered_lists = []
-    i = 0
-    for l in sentence_lists:
-        clustered_list = []
-        for s in l:
-            clustered_list.append((s, clusters[i]))
-            i += 1
-        clustered_lists.append(clustered_list)
+    clustered_lists = group_cluster(vector_lists, cluster)
+    return clustered_lists # [[((index_sentence, index_token), cluster)]]
 
-    return clustered_lists
+def map_sentences(sent_list, clustered_lists):
+    new_list = []
+    for essay in clustered_list:
+        new = []
+        for (index_sentence, index_token), cluster in essay:
+            new.append(sent_list[index_sentence][index_token], cluster)
+        new_list.append(new)
+    return new_list
 
 def get_keywords(clustered_lists, num_keywords=3):
     #sentences_tokenize = [nltk.word_tokenize(sentence.lower()) for sentence in sentences]
