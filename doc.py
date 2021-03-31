@@ -19,10 +19,11 @@ from read import read_files
 from cluster_sentences import cluster_TFIDF, cluster_BERT, get_keywords, map_sentences
 
 def init_models():
-    global model, pipeline, bert_model, bert_tokenizer
-    assert os.path.exists("fi_model.udpipe"), "You need to download the udpipe model (see readme)"
-    model = udpipe.Model.load("fi_model.udpipe")
-    pipeline = udpipe.Pipeline(model,"tokenize","none","none","horizontal")
+    global bert_model, bert_tokenizer
+#    global model, pipeline, bert_model, bert_tokenizer
+#    assert os.path.exists("fi_model.udpipe"), "You need to download the udpipe model (see readme)"
+#    model = udpipe.Model.load("fi_model.udpipe")
+#    pipeline = udpipe.Pipeline(model,"tokenize","none","none","horizontal")
 
     # bert
     bert_model = transformers.BertModel.from_pretrained("TurkuNLP/bert-base-finnish-cased-v1")
@@ -86,8 +87,8 @@ class DocCollection:
         BERT_clusters_indices = cluster_BERT([doc.bert_embedded for doc in self.docs])
         self.BERT_clusters = map_sentences([doc.sent_orig for doc in self.docs], BERT_clusters_indices)
         print("Done",file=sys.stderr)
-        self.TFIDF_keywords = get_keywords(map_sentences([doc.lemmas for doc in self.docs], TFIDF_clusters))
-        self.BERT_keywords = get_keywords(map_sentences([doc.lemmas for doc in self.docs], BERT_clusters))
+        self.TFIDF_keywords = get_keywords(map_sentences([doc.lemmas for doc in self.docs], TFIDF_clusters_indices))
+        self.BERT_keywords = get_keywords(map_sentences([doc.lemmas for doc in self.docs], BERT_clusters_indices))
 
 class CustomUnpickler(pickle.Unpickler):
     """

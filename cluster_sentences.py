@@ -25,10 +25,10 @@ def cluster_TFIDF(sentence_lists, num_labels=None):
     # clustering_model = cluster.KMeans(n_clusters=args.num_labels, random_state=0)
 
     clusters = clustering_model.fit(vectors.toarray()).labels_
-    clustered_lists = group_cluster(sentence_lists, cluster)
+    clustered_lists = group_cluster(sentence_lists, clusters)
     return clustered_lists # [[((index_sentence, index_token), cluster)]]
 
-def group_cluster(sentence_lists, cluster):
+def group_cluster(sentence_lists, clusters):
     clustered_lists = []
     i = 0
     for index_sentence, l in enumerate(sentence_lists):
@@ -47,15 +47,15 @@ def cluster_BERT(vector_lists, num_labels=None):
     # clustering_model = cluster.KMeans(n_clusters=args.num_labels, random_state=0)
 
     clusters = clustering_model.fit(vectors).labels_
-    clustered_lists = group_cluster(vector_lists, cluster)
+    clustered_lists = group_cluster(vector_lists, clusters)
     return clustered_lists # [[((index_sentence, index_token), cluster)]]
 
 def map_sentences(sent_list, clustered_lists):
     new_list = []
-    for essay in clustered_list:
+    for essay in clustered_lists:
         new = []
         for (index_sentence, index_token), cluster in essay:
-            new.append(sent_list[index_sentence][index_token], cluster)
+            new.append((sent_list[index_sentence][index_token], cluster))
         new_list.append(new)
     return new_list
 
