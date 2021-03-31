@@ -19,7 +19,9 @@
 	<li class="breadcrumb-item"><a href="{{app_root}}/e/{{exam.id}}/{{answer.id}}">{{answer.id}}</a></li>
       </ol>
 
-      <span>Some text! Some other text.</span> <span>yet another text</span>
+      {% for sent,clust in sentences_and_clusters %}
+      <span class="cluster_{{clust}}">{{sent}} </span>
+      {% endfor %}
 
 
     </div>

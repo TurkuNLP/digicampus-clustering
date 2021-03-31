@@ -21,7 +21,7 @@
       {% for answer in exam.docs %}
       <div class="row">
 	<div class="col-4">
-	  <a href="{{app_root}}/e/{{exam.id}}/{{answer.id}}">{{answer.id}}</a>
+	  <a href="{{app_root}}/e/{{exam.id}}/{{loop.index}}/TFIDF">{{answer.id}} (TFIDF)</a>
 	</div>
 	<div class="col-4">
 	  Something

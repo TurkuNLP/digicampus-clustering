@@ -35,11 +35,16 @@ def exam(exam_id):
     exam=exams[exam_id]
     return render_template("exam.html",exam=exam,app_root=APP_ROOT)
 
-@app.route("/e/<exam_id>/<answer_id>")
-def answer(exam_id,answer_id):
+@app.route("/e/<exam_id>/<answer_idx>/<method>")
+def answer(exam_id,answer_idx,method):
+    answer_idx=int(answer_idx)
     exam=exams[exam_id]
-    answers={}
-    for a in exam.docs:
-        answers[a.id]=a
-    return render_template("answer.html",exam=exam,answer=answers[answer_id],examapp_root=APP_ROOT)
+    answer=exam.docs[answer_idx]
+
+    if method=="TFIDF":
+        clusters=exam.TFIDF_clusters
+        keywords=exam.TFIDF_keywords
+
+    #Let's perhaps prepare the data for the template here, while we are still in Python
+    return render_template("answer.html",exam=exam,answer=answer,sentences_and_clusters=clusters[answer_idx],examapp_root=APP_ROOT)
 
