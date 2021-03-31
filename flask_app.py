@@ -44,9 +44,10 @@ def answer(exam_id,answer_idx,method):
 
     if method=="TFIDF":
         clusters=exam.TFIDF_clusters
-        keywords=exam.TFIDF_keywords
+        keywords_lists=exam.TFIDF_keywords
 
-    for k,v in keywords.items():
+    keywords={}
+    for k,v in keywords_lists.items():
         keywords[k]=", ".join(v)
 
 
