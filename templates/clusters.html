@@ -7,32 +7,48 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    
 
-  <title>DigiCampus Proto 0.0.1</title>
+    <title>DigiCampus Proto 0.0.1</title>
   </head>
   <body>
 
     <div class="container">
       <ol class="breadcrumb">
       	<li class="breadcrumb-item"><a href="{{app_root}}/">home</a></li>
+	<li class="breadcrumb-item"><a href="{{app_root}}/{{exam.id}}">{{exam.id}}</a></li>
       </ol>
 
-      {% for exam_id,exam in exams.items() %}
+      <ul>
+	{% for clust_idx,keywords,sents in cluster_data %}
+	  <li><a href="#{{clust_idx}}">{{clust_idx}}</a> {{keywords}}</li>
+	{% endfor %}
+      </ul>
+      
+      {% for clust_idx,keywords,sents in cluster_data %}
       <div class="row">
-	<div class="col-4">
-	  <a href="{{app_root}}/{{exam.id}}">{{exam.id}}</a>
-	</div>
-	<div class="col-4">
-	  Something
+	<div class="col-12">
+	  <h2>{{clust_idx}}: {{keywords}}<a name="{{clust_idx}}"></a></h2>
 	</div>
       </div>
-	{% endfor %}
+      {% for sent in sents %}
+      <div class="row">
+	<div class="col-2">
+	</div>
+	<div class="col-10">
+	  {{sent}}
+	</div>
+      </div>
+      {% endfor %}
+      {% endfor %}
+
+
     </div>
       
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
   </body>
 </html>

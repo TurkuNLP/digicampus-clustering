@@ -30,18 +30,13 @@ def index():
     #get the documents here
     return render_template("index.html",exams=exams,app_root=APP_ROOT)
 
-@app.route("/e/<exam_id>")
+@app.route("/<exam_id>")
 def exam(exam_id):
     global exams
     exam=exams[exam_id]
     return render_template("exam.html",exam=exam,app_root=APP_ROOT)
 
-@app.route("/e/<exam_id>/<answer_idx>/<method>")
-def answer(exam_id,answer_idx,method):
-    answer_idx=int(answer_idx)
-    exam=exams[exam_id]
-    answer=exam.docs[answer_idx]
-
+def get_clusters_and_kwords(exam,method):
     if method=="TFIDF":
         clusters=exam.TFIDF_clusters
         keywords_lists=exam.TFIDF_keywords
@@ -52,6 +47,33 @@ def answer(exam_id,answer_idx,method):
     keywords={}
     for k,v in keywords_lists.items():
         keywords[k]=", ".join(v)
+    return clusters,keywords
+
+@app.route("/<exam_id>/c/<method>")
+def cluster(exam_id,method):
+    global exams
+    exam=exams[exam_id]
+    clusters,keywords=get_clusters_and_kwords(exam,method)
+
+    cl2sentences={} #clusterid -> [s1,s2,s3,...]
+    for clustered_answer in clusters:
+        for sent_text,cluster_id in clustered_answer:
+            cl2sentences.setdefault(cluster_id,[]).append(sent_text)
+
+    #Again, let's make this easy for ourselves and prep data in python
+    cluster_data=[]
+    for k in sorted(keywords.keys()):
+        cluster_data.append((k,keywords[k],cl2sentences[k][:10]))
+    
+    return render_template("clusters.html",exam=exam, cluster_data=cluster_data,examapp_root=APP_ROOT)
+
+@app.route("/<exam_id>/e/<answer_idx>/<method>")
+def answer(exam_id,answer_idx,method):
+    answer_idx=int(answer_idx)
+    exam=exams[exam_id]
+    answer=exam.docs[answer_idx]
+
+    clusters,keywords=get_clusters_and_kwords(exam,method)
 
 
     #Let's perhaps prepare the data for the template here, while we are still in Python

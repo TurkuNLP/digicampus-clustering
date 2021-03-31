@@ -15,16 +15,20 @@
     <div class="container">
       <ol class="breadcrumb">
       	<li class="breadcrumb-item"><a href="{{app_root}}/">home</a></li>
-	<li class="breadcrumb-item"><a href="{{app_root}}/e/{{exam.id}}">{{exam.id}}</a></li>
+	<li class="breadcrumb-item"><a href="{{app_root}}/{{exam.id}}">{{exam.id}}</a></li>
       </ol>
 
+      <ul>
+	<li>Clusters in this exam: <a href="{{app_root}}/{{exam.id}}/c/TFIDF">[TFIDF]</a> <a href="{{app_root}}/{{exam.id}}/c/BERT">[BERT-NN]</a></li>
+      </ul>
+      
       {% for answer in exam.docs %}
       <div class="row">
 	<div class="col-4">
 	  {{answer.id}}
 	</div>
 	<div class="col-4">
-	  <a href="{{app_root}}/e/{{exam.id}}/{{loop.index}}/TFIDF">[TFIDF]</a>&nbsp;<a href="{{app_root}}/e/{{exam.id}}/{{loop.index}}/BERT">[BERT-NN]</a>
+	  <a href="{{app_root}}/{{exam.id}}/e/{{loop.index}}/TFIDF">[TFIDF]</a>&nbsp;<a href="{{app_root}}/{{exam.id}}/e/{{loop.index}}/BERT">[BERT-NN]</a>
 	</div>
 	<div class="col-4">
 	  Something
