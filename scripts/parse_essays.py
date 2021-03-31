@@ -64,13 +64,50 @@ def parse(txt):
     conllu = merge_conllu(conllu_seg, conllu_par)
     return conllu
 
+def get_lemmas(conllu):
+    essay_lemma = []
+    for sent in conllu:
+        lemmas = []
+        for token in sent[1]:
+            lemmas.append(token[LEMMA])
+        essay_lemma.append(" ".join(lemmas))
+    return essay_lemma
+
+def get_sent(conllu):
+    essay = []
+    for sent in conllu:
+        forms = []
+        for token in sent[1]:
+            forms.append(token[FORM])
+        essay.append(" ".join(forms))
+    return essay
+
+def get_orig(conllu):
+    essay = []
+    for sent in conllu:
+        orig = ""
+        for token in sent[1]:
+            if token[MISC]=="_":
+                orig = orig+token[FORM]+" "
+            elif token[MISC]=='SpaceAfter=No':
+                orig = orig+token[FORM]
+            elif token[MISC].startswith('SpacesAfter='):
+                orig = orig+token[FORM]+token[MISC][12:]
+            else:
+                raise AssertionError("MISC type not known")
+        essay.append(orig)
+    return essay
 
 
 def parse_all(data):
     examples = []
     for example in tqdm.tqdm(data):
         parsed = parse(example["essay"])
-        example["essay_conllu"] = parsed
+        example[""] = None
+        #example["essay_conllu"] = parsed
+        example["essay_lemma"] = get_lemmas(parsed)
+        example["sentences"] = get_sent(parsed)
+        example["essay_whitespace"] = get_orig(parsed)
         examples.append(example)
     return examples
 
@@ -83,7 +120,9 @@ def main(args):
         
     examples = parse_all(data)
     
-    print(json.dumps(examples, indent=4, ensure_ascii=False, sort_keys=True))
+    #print(json.dumps(examples, indent=4, ensure_ascii=False, sort_keys=True))
+    with open(args.json, "wt") as f:
+        json.dump(examples, f, indent=4, ensure_ascii=False, sort_keys=True)
         
         
 if __name__=="__main__":

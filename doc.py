@@ -8,7 +8,7 @@ import os
 import json
 import pickle
 import argparse
-import ufal.udpipe as udpipe
+#import ufal.udpipe as udpipe
 import torch
 import transformers
 import requests
@@ -16,13 +16,14 @@ import tqdm
 import pickle
 from glob import glob
 from read import read_files
-from cluster_sentences import cluster_TFIDF, cluster_BERT, get_keywords
+from cluster_sentences import cluster_TFIDF, cluster_BERT, get_keywords, map_sentences
 
 def init_models():
-    global model, pipeline, bert_model, bert_tokenizer
-    assert os.path.exists("fi_model.udpipe"), "You need to download the udpipe model (see readme)"
-    model = udpipe.Model.load("fi_model.udpipe")
-    pipeline = udpipe.Pipeline(model,"tokenize","none","none","horizontal")
+    global bert_model, bert_tokenizer
+#    global model, pipeline, bert_model, bert_tokenizer
+#    assert os.path.exists("fi_model.udpipe"), "You need to download the udpipe model (see readme)"
+#    model = udpipe.Model.load("fi_model.udpipe")
+#    pipeline = udpipe.Pipeline(model,"tokenize","none","none","horizontal")
 
     # bert
     bert_model = transformers.BertModel.from_pretrained("TurkuNLP/bert-base-finnish-cased-v1")
@@ -53,13 +54,16 @@ class Doc:
         self.doc_dict=doc_dict #this dictionary can have anything the user ever wants but must have "text" field and "id" field
         self.text = doc_dict["essay"]
         self.ID = doc_dict["id"]
-        self.preproc_udpipe() # self.sent_seg_text
+        self.lemmas = doc_dict["essay_lemma"] # list of strings, whitespace separation of lemmas
+        self.sent_orig = doc_dict["essay_whitespace"] # list of strings, with whitespace preserved
+        self.sent_seg_text = doc_dict["sentences"] # list of strings
+        #self.preproc_udpipe() # self.sent_seg_text
         self.encode_bert() # self.bert_embedded
 
-    def preproc_udpipe(self):
-        global pipeline
-        sent_seg_text = pipeline.process(self.text)
-        self.sent_seg_text = [sent.strip() for sent in sent_seg_text.split("\n") if sent.strip()]
+    #def preproc_udpipe(self):
+    #    global pipeline
+    #    sent_seg_text = pipeline.process(self.text)
+    #    self.sent_seg_text = [sent.strip() for sent in sent_seg_text.split("\n") if sent.strip()]
 
     def encode_bert(self):
         tokenized_ids=[bert_tokenizer.encode(txt, add_special_tokens=True) for txt in self.sent_seg_text] #this runs the BERT tokenizer, returns list of lists of integers
@@ -78,12 +82,13 @@ class DocCollection:
         for i,d in enumerate(self.docs):
             d.id=f"answer-{str(i)}"
         print("Starting clustering...",file=sys.stderr)
-        self.TFIDF_clusters = cluster_TFIDF([doc.sent_seg_text for doc in self.docs])
-        self.BERT_clusters = cluster_BERT([doc.bert_embedded for doc in self.docs],
-                                               [doc.sent_seg_text for doc in self.docs])
+        TFIDF_clusters_indices = cluster_TFIDF([doc.sent_seg_text for doc in self.docs])
+        self.TFIDF_clusters = map_sentences([doc.sent_orig for doc in self.docs], TFIDF_clusters_indices)
+        BERT_clusters_indices = cluster_BERT([doc.bert_embedded for doc in self.docs])
+        self.BERT_clusters = map_sentences([doc.sent_orig for doc in self.docs], BERT_clusters_indices)
         print("Done",file=sys.stderr)
-        self.TFIDF_keywords = get_keywords(self.TFIDF_clusters)
-        self.BERT_keywords = get_keywords(self.BERT_clusters)
+        self.TFIDF_keywords = get_keywords(map_sentences([doc.lemmas for doc in self.docs], TFIDF_clusters_indices))
+        self.BERT_keywords = get_keywords(map_sentences([doc.lemmas for doc in self.docs], BERT_clusters_indices))
 
 class CustomUnpickler(pickle.Unpickler):
     """
