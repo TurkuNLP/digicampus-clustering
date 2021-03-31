@@ -18,7 +18,7 @@
 	<li class="breadcrumb-item"><a href="{{app_root}}/{{exam.id}}">{{exam.id}}</a></li>
       </ol>
 
-      {% for answer in exam.answers %}
+      {% for answer in exam.docs %}
       <div class="row">
 	<div class="col-4">
 	  <a href="{{app_root}}/{{exam.id}}/{{answer.id}}">{{answer.id}}</a>

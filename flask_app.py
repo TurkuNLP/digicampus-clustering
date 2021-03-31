@@ -15,14 +15,27 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 APP_ROOT = os.environ.get('DIGI_CLUSTERING_ROOT',"")
 app.config["APPLICATION_ROOT"] = APP_ROOT
 
+
 DATADIR=os.environ["DIGI_CLUSTERING_DATA"]
-
-
+exams={} #exam-id -> DocCollection()
+for fname in glob.glob(os.path.join(DATADIR,"*.pickle")):
+    print("LOADING",fname)
+    exam=load_doc_collection(fname)
+    exams[exam.id]=exam
 
 @app.route("/")
 def index():
+    global exams
     #get the documents here
-    collection = load_doc_collection("delme.pickle")
-    exams=[{"id":"example_exam_1"},{"id":"example_exam_2"}]
     return render_template("index.html",exams=exams,app_root=APP_ROOT)
+
+@app.route("/e/<exam_id>")
+def exam(exam_id):
+    global exams
+    exam=exams[exam_id]
+    return render_template("exam.html",exam=exam,app_root=APP_ROOT)
+
+@app.route("/e/<exam_id>/<answer_id>")
+def answer(exam_id,answer_id):
+    return render_template("answer.html",app_root=APP_ROOT)
 

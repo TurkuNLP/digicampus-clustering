@@ -73,17 +73,13 @@ class DocCollection:
 
     def __init__(self,doc_dicts):
         self.docs=[Doc(doc_dict) for doc_dict in tqdm.tqdm(doc_dicts)]
+        #FIXME!!!!
+        for i,d in enumerate(self.docs):
+            d.id=f"answer-{str(i)}"
         print("Starting clustering...",file=sys.stderr)
         self.TFIDF_clusters = cluster_sentences([doc.sent_seg_text for doc in self.docs])
         print("Done",file=sys.stderr)
         self.TFIDF_keywords = get_keywords(self.TFIDF_clusters)
-
-
-def make_collection(fnames):
-    data = read_files(fnames)
-    print("Data jsons read",file=sys.stderr)
-    docs = DocCollection(data)
-    return docs
 
 class CustomUnpickler(pickle.Unpickler):
     """
@@ -111,6 +107,7 @@ if __name__=="__main__":
     data = read_files(files)
         
     docs = DocCollection(data)
+    docs.id=os.path.basename(files[0]) #FIX! Get the ID from the json!
     # print(docs.TFIDF_keywords)
     with open(args.out_pickle,"wb") as f:
         pickle.dump(docs, f)
