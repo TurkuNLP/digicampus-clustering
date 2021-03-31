@@ -12,27 +12,24 @@ import ufal.udpipe as udpipe
 import torch
 import transformers
 import requests
+import tqdm
+import pickle
 from glob import glob
 from read import read_files
-from cluster_sentences import cluster_sentences, get_keywords
+from cluster_sentences import cluster_TFIDF, cluster_BERT, get_keywords
 
-# udpipe
-global model, pipeline
-model = udpipe.Model.load("fi_model.udpipe")
-pipeline = udpipe.Pipeline(model,"tokenize","none","none","horizontal")
+def init_models():
+    global model, pipeline, bert_model, bert_tokenizer
+    assert os.path.exists("fi_model.udpipe"), "You need to download the udpipe model (see readme)"
+    model = udpipe.Model.load("fi_model.udpipe")
+    pipeline = udpipe.Pipeline(model,"tokenize","none","none","horizontal")
 
-# bert
-bert_model = transformers.BertModel.from_pretrained("TurkuNLP/bert-base-finnish-cased-v1")
-bert_model.eval()
-if torch.cuda.is_available():
-    bert_model = bert_model.cuda()
-bert_tokenizer = transformers.BertTokenizer.from_pretrained("TurkuNLP/bert-base-finnish-cased-v1")
-
-def get_parser():
-    parser = argparse.ArgumentParser(description="The script takes in globs for json files and outputs a pickle file of the clustering results.")
-    parser.add_argument("--json-glob", type=str, required=True, help="Path to json files containing the essays.")
-    parser.add_argument("--out-pickle", type=str, required=True, help="Path to the pickle file storing the clustering results.")
-    return parser
+    # bert
+    bert_model = transformers.BertModel.from_pretrained("TurkuNLP/bert-base-finnish-cased-v1")
+    bert_model.eval()
+    if torch.cuda.is_available():
+        bert_model = bert_model.cuda()
+    bert_tokenizer = transformers.BertTokenizer.from_pretrained("TurkuNLP/bert-base-finnish-cased-v1")
 
 def embed(data,bert_model,how_to_pool="CLS"):
     with torch.no_grad(): #tell the model not to gather gradients
@@ -72,25 +69,51 @@ class Doc:
         if len(self.sent_seg_text)==1:
             self.bert_embedded=self.bert_embedded.reshape(1, -1)
 
+
 class DocCollection:
 
     def __init__(self,doc_dicts):
-        self.docs=[Doc(doc_dict) for doc_dict in doc_dicts]
-        self.TFIDF_clusters = cluster_sentences([doc.sent_seg_text for doc in self.docs])
+        self.docs=[Doc(doc_dict) for doc_dict in tqdm.tqdm(doc_dicts)]
+        #FIXME!!!!
+        for i,d in enumerate(self.docs):
+            d.id=f"answer-{str(i)}"
+        print("Starting clustering...",file=sys.stderr)
+        self.TFIDF_clusters = cluster_TFIDF([doc.sent_seg_text for doc in self.docs])
+        self.BERT_clusters = cluster_BERT([doc.bert_embedded for doc in self.docs],
+                                               [doc.sent_seg_text for doc in self.docs])
+        print("Done",file=sys.stderr)
         self.TFIDF_keywords = get_keywords(self.TFIDF_clusters)
+        self.BERT_keywords = get_keywords(self.BERT_clusters)
 
+class CustomUnpickler(pickle.Unpickler):
+    """
+    https://medium.com/analytics-vidhya/deployment-blues-why-wont-my-flask-web-app-just-deploy-2ac9092a1b40#c18b
+    """
+    def find_class(self, module, name):
+        try:
+            return super().find_class(__name__, name)
+        except AttributeError:
+            return super().find_class(module, name)
+        
+def load_doc_collection(fname):
+    collection = CustomUnpickler(open(fname, "rb")).load()
+    return collection
 
-def main():
-    args = get_parser().parse_args()
+if __name__=="__main__":
+    parser = argparse.ArgumentParser(description="The script takes in globs for json files and outputs a pickle file of the clustering results.")
+    parser.add_argument("--json-glob", type=str, required=True, help="Path to json files containing the essays.")
+    parser.add_argument("--out-pickle", type=str, required=True, help="Path to the pickle file storing the clustering results.")
+    args = parser.parse_args()
+    
+    init_models()
     # example
     files = glob(args.json_glob)
     data = read_files(files)
         
     docs = DocCollection(data)
+    docs.id=os.path.basename(files[0]) #FIX! Get the ID from the json!
     # print(docs.TFIDF_keywords)
     with open(args.out_pickle,"wb") as f:
-        pickle.dump([docs.TFIDF_clusters, docs.TFIDF_keywords], f)
-    return 0
+        pickle.dump(docs, f)
 
-if __name__=="__main__":
-    sys.exit(main())
+    sys.exit(0)

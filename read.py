@@ -5,8 +5,11 @@ Assumes the input to be json files
 """
 
 import json
+import sys
 
 def read_files(filename_lst):
+    assert filename_lst, "Got no files to read"
+    print("Readin these files:", filename_lst, file=sys.stderr)
     all_data = []
     for fname in filename_lst:
         with open(fname, "r") as f:
