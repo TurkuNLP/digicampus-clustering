@@ -45,6 +45,9 @@ def answer(exam_id,answer_idx,method):
     if method=="TFIDF":
         clusters=exam.TFIDF_clusters
         keywords_lists=exam.TFIDF_keywords
+    elif method=="BERT":
+        clusters=exam.BERT_clusters
+        keywords_lists=exam.BERT_keywords
 
     keywords={}
     for k,v in keywords_lists.items():

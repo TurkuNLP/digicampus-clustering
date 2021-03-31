@@ -17,7 +17,7 @@
       <ol class="breadcrumb">
       	<li class="breadcrumb-item"><a href="{{app_root}}/">home</a></li>
 	<li class="breadcrumb-item"><a href="{{app_root}}/e/{{exam.id}}">{{exam.id}}</a></li>
-	<li class="breadcrumb-item"><a href="{{app_root}}/e/{{exam.id}}/{{answer.id}}">{{answer.id}}</a></li>
+	<li class="breadcrumb-item">{{answer.id}}</li>
       </ol>
 
       {% for sent,cluster_id,hue,lightval in sentences_and_clusters %}
