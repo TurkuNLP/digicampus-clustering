@@ -37,5 +37,9 @@ def exam(exam_id):
 
 @app.route("/e/<exam_id>/<answer_id>")
 def answer(exam_id,answer_id):
-    return render_template("answer.html",app_root=APP_ROOT)
+    exam=exams[exam_id]
+    answers={}
+    for a in exam.docs:
+        answers[a.id]=a
+    return render_template("answer.html",exam=exam,answer=answers[answer_id],examapp_root=APP_ROOT)
 
