@@ -54,6 +54,13 @@ class Doc:
         self.doc_dict=doc_dict #this dictionary can have anything the user ever wants but must have "text" field and "id" field
         self.text = doc_dict["essay"]
         self.ID = doc_dict["id"]
+        self.grade = doc_dict["lab_grade"] if "lab_grade" in doc_dict else None
+        if "topic" in doc_dict:
+            self.prompt = doc_dict["topic"]
+        elif "question" in doc_dict:
+            self.prompt = doc_dict["question"]
+        else:
+            self.prompt = None
         self.lemmas = doc_dict["essay_lemma"] # list of strings, whitespace separation of lemmas
         self.sent_orig = doc_dict["essay_whitespace"] # list of strings, with whitespace preserved
         self.sent_seg_text = doc_dict["sentences"] # list of strings
@@ -78,6 +85,7 @@ class DocCollection:
 
     def __init__(self,doc_dicts):
         self.docs=[Doc(doc_dict) for doc_dict in tqdm.tqdm(doc_dicts)]
+        self.prompt = "\n".join(set([doc.prompt for doc in self.docs]))
         #FIXME!!!!
         for i,d in enumerate(self.docs):
             d.id=f"answer-{str(i)}"

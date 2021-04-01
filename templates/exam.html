@@ -24,14 +24,17 @@
       
       {% for answer in exam.docs %}
       <div class="row">
-	<div class="col-4">
+	<div class="col-3">
 	  {{answer.id}}
 	</div>
-	<div class="col-4">
+	<div class="col-3">
 	  <a href="{{app_root}}/{{exam.id}}/e/{{loop.index0}}/TFIDF">[TFIDF]</a>&nbsp;<a href="{{app_root}}/{{exam.id}}/e/{{loop.index0}}/BERT">[BERT-NN]</a>
 	</div>
-	<div class="col-4">
-	  Something
+	<div class="col-1">
+	  {{answer.grade}}
+	</div>
+	<div class="col-5">
+	  {{answer.text[:35]}}...
 	</div>
       </div>
 	{% endfor %}

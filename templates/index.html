@@ -22,8 +22,11 @@
 	<div class="col-4">
 	  <a href="{{app_root}}/{{exam.id}}">{{exam.id}}</a>
 	</div>
-	<div class="col-4">
-	  Something
+	<div class="col-8">
+	  {{exam.prompt[:130]}}
+	  {% if exam.prompt.__len__()>100 %}
+	  ...
+	  {% endif %}
 	</div>
       </div>
 	{% endfor %}
