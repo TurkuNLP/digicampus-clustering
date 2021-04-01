@@ -64,6 +64,6 @@ def get_keywords(clustered_lists, num_keywords=3):
     for cluster_id, sl in cluster_dict.items():
         feat_freq = vectorizer.transform(sl).toarray().sum(axis=0).squeeze()
         max_idx = np.argsort(feat_freq)[-num_keywords:][::-1]
-        cluster_keywords[cluster_id] = [vectorizer.get_feature_names()[i] for i in max_idx]
+        cluster_keywords[cluster_id] = [vectorizer.get_feature_names()[i] for i in max_idx if feat_freq[i]!=0]
 
     return cluster_keywords
