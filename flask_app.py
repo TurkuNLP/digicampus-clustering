@@ -13,6 +13,9 @@ import numpy as np
 
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+#TEMPLATE_ENVIRONMENT = Environment(
+#    keep_trailing_newline=True)
+app.config["KEEP_TRAILING_NEWLINE"] = True
 APP_ROOT = os.environ.get('DIGI_CLUSTERING_ROOT',"")
 app.config["APPLICATION_ROOT"] = APP_ROOT
 
@@ -92,7 +95,8 @@ def answer(exam_id,answer_idx,method):
     ### SO THIS CAN THEN BE LOOPED OVER IN JINJA
     sentences_and_clusters=[]
     for s_text,cls in clusters[answer_idx]:
-        sentences_and_clusters.append((s_text,cls,clust_hues[cls],clust_values[cls]))
+        br = True if s_text.endswith("\n") else False
+        sentences_and_clusters.append((s_text,cls,clust_hues[cls],clust_values[cls],br))
 
     return render_template("answer.html",exam=exam,answer=answer,sentences_and_clusters=sentences_and_clusters,keywords=keywords,examapp_root=APP_ROOT)
 

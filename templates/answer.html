@@ -20,8 +20,11 @@
 	<li class="breadcrumb-item">{{answer.id}}</li>
       </ol>
 
-      {% for sent,cluster_id,hue,lightval in sentences_and_clusters %}
+      {% for sent,cluster_id,hue,lightval,break in sentences_and_clusters %}
       <span class="cluster_{{clust}}" style="color:hsl({{hue}},{{lightval}}%,50%)" data-toggle="tooltip" data-placement="top" title="{{keywords[cluster_id]}}">{{sent}} </span>
+        {% if break %}
+        <br/>
+        {% endif %}
       {% endfor %}
 
 
