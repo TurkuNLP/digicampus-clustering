@@ -95,7 +95,7 @@ def get_orig(conllu):
                 orig = orig+token[FORM]+token[MISC][12:]
             else:
                 raise AssertionError("MISC type not known")
-        essay.append(orig)
+        essay.append(orig.replace("\\n","\n").replace("\\s"," "))
     return essay
 
 
@@ -103,7 +103,6 @@ def parse_all(data):
     examples = []
     for example in tqdm.tqdm(data):
         parsed = parse(example["essay"])
-        example[""] = None
         #example["essay_conllu"] = parsed
         example["essay_lemma"] = get_lemmas(parsed)
         example["sentences"] = get_sent(parsed)

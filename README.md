@@ -4,9 +4,14 @@ Code for representing the student essays in clusters.
 
 
 ### Requirements
-Turku-neural-parser-pipeline
+#### Turku-neural-parser-pipeline
 Installation guidelines: https://turkunlp.github.io/Turku-neural-parser-pipeline/
 Required model: models_fi_tdt_v2.7
+
+#### nltk and nltk.corpus.stopwords
+```
+python3 -c 'import nltk;nltk.download("stopwords")'
+```
 
 ### How to run
 1. Parse the exam, requires the parser

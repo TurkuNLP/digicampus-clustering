@@ -43,12 +43,18 @@ def map_sentences(sent_list, clustered_lists):
         new_list.append(new)
     return new_list
 
+def load_stop_words():
+    from nltk.corpus import stopwords
+    stop_words = stopwords.words('finnish')
+    stop_words = stop_words + [',','.','-']
+    return stop_words
+
 def get_keywords(clustered_lists, num_keywords=3):
     #sentences_tokenize = [nltk.word_tokenize(sentence.lower()) for sentence in sentences]
     ##sentences_stem = sentences_tokenize
     ##sentences_stem = [[stemmer.stem(token) for token in sentence] for sentence in sentences_tokenize]
     #sentences_vectorize = vectorizer.fit_transform([' '.join(sentence) for sentence in sentences_stem])
-    vectorizer = TfidfVectorizer(token_pattern=r"(?u)\b\w+\b").fit(s for l in clustered_lists for s, _ in l)
+    vectorizer = TfidfVectorizer(token_pattern=r"(?u)\b\w+\b", stop_words=load_stop_words()).fit(s for l in clustered_lists for s, _ in l)
     cluster_dict = {}
     for l in clustered_lists:
         for s, c in l:
