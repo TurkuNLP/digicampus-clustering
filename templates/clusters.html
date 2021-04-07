@@ -20,15 +20,15 @@
       </ol>
 
       <ul>
-	{% for clust_idx,keywords,sents in cluster_data %}
-	  <li><a href="#{{clust_idx}}">{{clust_idx}}</a> {{keywords}}</li>
+	{% for clust_idx,keywords,sents,goodness in cluster_data %}
+	  <li><a href="#{{clust_idx}}">{{clust_idx}} (goodness: {{"%.0f%%"|format(goodness*100)}})</a> {{keywords}}</li>
 	{% endfor %}
       </ul>
       
-      {% for clust_idx,keywords,sents in cluster_data %}
+      {% for clust_idx,keywords,sents,goodness in cluster_data %}
       <div class="row">
 	<div class="col-12">
-	  <h2>{{clust_idx}}: {{keywords}}<a name="{{clust_idx}}"></a></h2>
+	  <h2>{{clust_idx}} (goodness: {{"%.0f%%"|format(goodness*100)}}): {{keywords}}<a name="{{clust_idx}}"></a></h2>
 	</div>
       </div>
       {% for sent in sents %}

@@ -41,22 +41,24 @@ def get_clusters_and_kwords(exam,method):
     if method=="TFIDF":
         clusters=exam.TFIDF_clusters
         keywords_lists=exam.TFIDF_keywords
+        goodness=exam.TFIDF_goodness
     elif method=="BERT":
         clusters=exam.BERT_clusters
         keywords_lists=exam.BERT_keywords
+        goodness=exam.BERT_goodness
     else:
         raise ValueError("Method not recognized")
 
     keywords={}
     for k,v in keywords_lists.items():
         keywords[k]=", ".join(v)
-    return clusters,keywords
+    return clusters,keywords,goodness
 
 @app.route("/<exam_id>/c/<method>")
 def cluster(exam_id,method):
     global exams
     exam=exams[exam_id]
-    clusters,keywords=get_clusters_and_kwords(exam,method)
+    clusters,keywords,goodness=get_clusters_and_kwords(exam,method)
 
     cl2sentences={} #clusterid -> [s1,s2,s3,...]
     for clustered_answer in clusters:
@@ -66,7 +68,8 @@ def cluster(exam_id,method):
     #Again, let's make this easy for ourselves and prep data in python
     cluster_data=[]
     for k in sorted(keywords.keys()):
-        cluster_data.append((k,keywords[k],cl2sentences[k][:10]))
+        cluster_data.append((k,keywords[k],cl2sentences[k][:10],goodness[k]))
+    cluster_data.sort(key=lambda c_d:c_d[3],reverse=True)
 
     return render_template("clusters.html",exam=exam, cluster_data=cluster_data,examapp_root=APP_ROOT)
 
@@ -74,7 +77,7 @@ def cluster(exam_id,method):
 def get_sentence_cluster(exam_id, answer_idx, method):
     global exams
     exam = exams[exam_id]
-    clusters, keywords = get_clusters_and_kwords(exam, method)
+    clusters, keywords, goodness = get_clusters_and_kwords(exam, method)
     answer_idx = [d.id for d in exam.docs].index(answer_idx)
     sentence_idx = request.json["sentence_id"]
     sentence_idx = int(sentence_idx.split("_")[-1]) # sentence_idx originally looks like `sentence_12`
@@ -100,7 +103,7 @@ def answer(exam_id,answer_idx,method):
     exam=exams[exam_id]
     answer=exam.docs[answer_idx]
 
-    clusters,keywords=get_clusters_and_kwords(exam,method)
+    clusters,keywords,goodness=get_clusters_and_kwords(exam,method)
 
 
     #Let's perhaps prepare the data for the template here, while we are still in Python
