@@ -64,9 +64,9 @@
 	}
 
      function query_cluster(sentence_id) {
-        console.log("Query {{examapp_root}}/{{exam.id}}/{{answer.id}}/{{method}}", sentence_id);
+        console.log("Query {{app_root}}/{{exam.id}}/{{answer.id}}/{{method}}", sentence_id);
         $.ajax({type: 'POST',
-                url: "{{examapp_root}}/{{exam.id}}/{{answer.id}}/{{method}}/sentence",
+                url: "{{app_root}}/{{exam.id}}/{{answer.id}}/{{method}}/sentence",
                 data:JSON.stringify({"sentence_id":sentence_id}),
                 contentType: "application/json",
                 timeout: 3000,
