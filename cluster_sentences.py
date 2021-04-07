@@ -120,17 +120,26 @@ def get_keywords(clustered_lists, num_keywords=3):
 
     return cluster_keywords
 
-def get_goodness(clustered_lists, vectors, clusters, goodness_method):
-    if goodness_method == 'doc-proportion':
-        cluster_dict = {}
-        for i, l in enumerate(clustered_lists):
-            for s, c in l:
-                cluster_dict.setdefault(c, set()).add(i)
-        return {k: len(v)/len(clustered_lists) for k, v in cluster_dict.items()}
-
+def silhouette_goodness(vectors, clusters):
     silhouette_scores = metrics.silhouette_samples(vectors, clusters)
     cluster_dict = {}
     for s, c in zip(silhouette_scores, clusters):
         cluster_dict.setdefault(c, []).append(s)
 
     return {k: max(sum(v)/len(v), 0) for k, v in cluster_dict.items()}
+
+def doc_proportion_goodness(clustered_lists):
+    cluster_dict = {}
+    for i, l in enumerate(clustered_lists):
+        for s, c in l:
+            cluster_dict.setdefault(c, set()).add(i)
+    return {k: len(v)/len(clustered_lists) for k, v in cluster_dict.items()}
+
+def get_goodness(clustered_lists, vectors, clusters, goodness_method):
+    if goodness_method == 'silhouette':
+        return silhouette_goodness(vectors, clusters)
+    if goodness_method == 'doc-proportion':
+        return doc_proportion_goodness(clustered_lists)
+
+    dg = doc_proportion_goodness(clustered_lists)
+    return {k: (v*dg[k])**(1/4) for k, v in silhouette_goodness(vectors, clusters).items()}

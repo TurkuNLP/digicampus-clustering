@@ -105,8 +105,6 @@ class DocCollection:
         print("Done",file=sys.stderr)
         self.TFIDF_keywords = get_keywords(map_sentences([doc.lemmas for doc in self.docs], TFIDF_clusters_indices))
         self.BERT_keywords = get_keywords(map_sentences([doc.lemmas for doc in self.docs], BERT_clusters_indices))
-        print(self.TFIDF_goodness)
-        print(self.BERT_goodness)
 
 class CustomUnpickler(pickle.Unpickler):
     """
@@ -127,7 +125,7 @@ if __name__=="__main__":
     parser.add_argument("--json-glob", type=str, required=True, help="Path to json files containing the essays.")
     parser.add_argument("--out-dir", type=str, required=True, help="Path to the pickle file storing the clustering results.")
     parser.add_argument("--cluster-count", type=str, default='simple', help="What cluster count approximation method to use. Supported values are 'silhouette' and 'simple'. Default: 'simple'.")
-    parser.add_argument("--goodness-method", type=str, default='silhouette', help="How to evaluate cluster goodness. Supported values are 'silhouette' and 'doc-proportion'. Default: 'silhouette'.")
+    parser.add_argument("--goodness-method", type=str, default='hybrid', help="How to evaluate cluster goodness. Supported values are 'silhouette', 'doc-proportion', and 'hybrid'. Default: 'hybrid'.")
     args = parser.parse_args()
 
     init_models()
