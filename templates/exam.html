@@ -25,11 +25,22 @@
 
       <ul>
 	<!-- <li data-toggle="tooltip" data-placement="bottom" title="{{exam.prompt}}">Prompt</li> -->
-  <li> Prompt</li>
-  {{exam.prompt}}
 	<li>Clusters in this exam: <a href="{{app_root}}/{{exam.id}}/c/TFIDF">[TFIDF]</a> <a href="{{app_root}}/{{exam.id}}/c/BERT">[BERT-NN]</a></li>
       </ul>
 
+      <div class="row">
+	<div class="col-12 border p-3">
+	  <strong>Question:</strong> {{exam.prompt}}	  
+	  </div>
+	</div>
+
+      <div class="row">
+	<div class="col-3">ID</div>
+	<div class="col-3">Answer</div>
+	<div class="col-1">Grade</div>
+	<div class="col-5">...</div>
+      </div>
+      
       {% for answer in exam.docs %}
       <div class="row">
 	<div class="col-3">

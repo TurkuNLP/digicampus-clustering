@@ -21,7 +21,7 @@
       </ol>
       <div class="row">
         <div class="col-12 p-3 border">
-    Highlight clusters better than: Low&nbsp;<input type="range" class="custom-range" val="50" id="goodnesscutoff" min="0" max="100" step="1">&nbsp;High
+    Highlight clusters better than: Low&nbsp;<input type="range" class="custom-range" val="20" id="goodnesscutoff" min="0" max="100" step="1">&nbsp;High
 	</div>
       </div>
       <div class="row">
@@ -87,7 +87,7 @@
 	  $("#goodnesscutoff").on("input",function(){
 	      show_colored_above_goodness($(this).val());
           });
-	  $("#matchlencutoff").trigger("input");
+	  show_colored_above_goodness(20);							
 
       });
 
