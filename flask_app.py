@@ -71,7 +71,7 @@ def cluster(exam_id,method):
         cluster_data.append((k,keywords[k],cl2sentences[k][:10],goodness[k]))
     cluster_data.sort(key=lambda c_d:c_d[3],reverse=True)
 
-    return render_template("clusters.html",exam=exam, cluster_data=cluster_data,examapp_root=APP_ROOT)
+    return render_template("clusters.html",exam=exam, cluster_data=cluster_data,app_root=APP_ROOT)
 
 @app.route("/<exam_id>/<answer_idx>/<method>/sentence", methods=["POST"])
 def get_sentence_cluster(exam_id, answer_idx, method):
@@ -94,7 +94,7 @@ def get_sentence_cluster(exam_id, answer_idx, method):
                             cls=cls,
                             keywords=keywords[cls],
                             sentences=cl2sentences[cls],
-                            examapp_root=APP_ROOT)
+                            app_root=APP_ROOT)
     return {"sentences_html": sentences_html}
 
 @app.route("/<exam_id>/e/<answer_idx>/<method>")
@@ -137,4 +137,4 @@ def answer(exam_id,answer_idx,method):
                             method=method,
                             sentences_and_clusters=sentences_and_clusters,
                             keywords=keywords,
-                            examapp_root=APP_ROOT)
+                            app_root=APP_ROOT)
