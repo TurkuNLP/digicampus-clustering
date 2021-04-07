@@ -17,6 +17,7 @@ import pickle
 from glob import glob
 from read import read_files
 from cluster_sentences import cluster_TFIDF, cluster_BERT, get_keywords, get_goodness, map_sentences
+import re
 
 def init_models():
     global bert_model, bert_tokenizer
@@ -139,7 +140,9 @@ if __name__=="__main__":
         prompt_data = [d for d in data if d["prompt"]==prompt]
         if len(prompt_data)>9:
             docs = DocCollection(prompt_data, args.cluster_count, args.goodness_method)
-            docs.id=prompt[:10].replace(" ","_") #os.path.basename(files[0]) #FIX! Get the ID from the json!
+            
+            docs.id=prompt[:20].lower().replace("ä","a").replace("ö","o").replace("å","a").replace(" ","_")
+            docs.id=re.sub("[^a-z0-9_]","",docs.id)
             # print(docs.TFIDF_keywords)
             #with open(args.out_pickle,"wb") as f:
             #    pickle.dump(docs, f)
