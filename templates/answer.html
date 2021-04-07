@@ -19,9 +19,12 @@
 	      <li class="breadcrumb-item"><a href="{{app_root}}/{{exam.id}}">{{exam.id}}</a></li>
 	      <li class="breadcrumb-item">{{answer.id}}</li>
       </ol>
-        <div class="col-6 p-3">
-	  Goodness: Low&nbsp;<input type="range" class="custom-range" val="50" id="goodnesscutoff" min="0" max="100" step="1">&nbsp;High
+      <div class="row">
+        <div class="col-12 p-3 border">
+    Highlight clusters better than: Low&nbsp;<input type="range" class="custom-range" val="50" id="goodnesscutoff" min="0" max="100" step="1">&nbsp;High
 	</div>
+      </div>
+      <div class="row">
       <!-- The essay -->
       <div class="col-12 p-3 border" style="height:50vh;max-height:50vh;overflow-y:scroll;" id="essay">
         {% for i, sent,cluster_id,hue,lightval,break,goodness in sentences_and_clusters %}
@@ -32,9 +35,12 @@
         {% endfor %}
       </div>
 
+      </div>
       <!-- Display selected cluster -->
+      <div class="row">
       <div class="col-12 p-3 border" style="height:50vh;max-height:50vh;overflow-y:scroll;" id="query">
 
+      </div>
       </div>
 
     </div>
