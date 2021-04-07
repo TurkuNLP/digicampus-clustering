@@ -20,7 +20,7 @@ python3 scripts/parse_essays.py --json tp.json 2>/dev/null
 ```
 2. Make a pickle for an exam
 ```
-python3 doc.py --js tp.json --out tp.pickle
+python3 doc.py --js '<glob_to_json_file(s)>' --out-dir <outdir>
 ```
 3. Launch the visualization tool. Choose a port number, default is 6677. To change which pickle files are loaded, change the variable `DIGI_CLUSTERING_DATA` in the script.
 ```

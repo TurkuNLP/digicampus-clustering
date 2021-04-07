@@ -48,12 +48,22 @@ def embed(data,bert_model,how_to_pool="CLS"):
             print("Pooled shape:",pooled.shape)
     return pooled.cpu().numpy() #done! move data back to CPU and extract the numpy array
 
+def get_prompt(doc_dict):
+    if "topic" in doc_dict:
+        prompt = doc_dict["topic"]
+    elif "question" in doc_dict:
+        prompt = doc_dict["question"]
+    else:
+        prompt = None
+    doc_dict["prompt"] = prompt
+    return prompt
+
 class Doc:
 
     def __init__(self, doc_dict):
         self.doc_dict=doc_dict #this dictionary can have anything the user ever wants but must have "text" field and "id" field
         self.text = doc_dict["essay"]
-        self.ID = doc_dict["id"]
+        self.id = doc_dict["id"]
         self.grade = doc_dict["lab_grade"] if "lab_grade" in doc_dict else None
         if "topic" in doc_dict:
             self.prompt = doc_dict["topic"]
@@ -86,9 +96,6 @@ class DocCollection:
     def __init__(self,doc_dicts):
         self.docs=[Doc(doc_dict) for doc_dict in tqdm.tqdm(doc_dicts)]
         self.prompt = "\n".join(set([doc.prompt for doc in self.docs]))
-        #FIXME!!!!
-        for i,d in enumerate(self.docs):
-            d.id=f"answer-{str(i)}"
         print("Starting clustering...",file=sys.stderr)
         TFIDF_clusters_indices = cluster_TFIDF([doc.sent_seg_text for doc in self.docs])
         self.TFIDF_clusters = map_sentences([doc.sent_orig for doc in self.docs], TFIDF_clusters_indices)
@@ -107,7 +114,7 @@ class CustomUnpickler(pickle.Unpickler):
             return super().find_class(__name__, name)
         except AttributeError:
             return super().find_class(module, name)
-        
+
 def load_doc_collection(fname):
     collection = CustomUnpickler(open(fname, "rb")).load()
     return collection
@@ -115,18 +122,24 @@ def load_doc_collection(fname):
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="The script takes in globs for json files and outputs a pickle file of the clustering results.")
     parser.add_argument("--json-glob", type=str, required=True, help="Path to json files containing the essays.")
-    parser.add_argument("--out-pickle", type=str, required=True, help="Path to the pickle file storing the clustering results.")
+    parser.add_argument("--out-dir", type=str, required=True, help="Path to the pickle file storing the clustering results.")
     args = parser.parse_args()
-    
+
     init_models()
     # example
     files = glob(args.json_glob)
     data = read_files(files)
-        
-    docs = DocCollection(data)
-    docs.id=os.path.basename(files[0]) #FIX! Get the ID from the json!
-    # print(docs.TFIDF_keywords)
-    with open(args.out_pickle,"wb") as f:
-        pickle.dump(docs, f)
+
+    all_prompts = list(set([get_prompt(d) for d in data]))
+    for prompt in all_prompts:
+        prompt_data = [d for d in data if d["prompt"]==prompt]
+        if len(prompt_data)>9:
+            docs = DocCollection(prompt_data)
+            docs.id=prompt[:10].replace(" ","_") #os.path.basename(files[0]) #FIX! Get the ID from the json!
+            # print(docs.TFIDF_keywords)
+            #with open(args.out_pickle,"wb") as f:
+            #    pickle.dump(docs, f)
+            with open(args.out_dir+"/"+docs.id+".pickle", "wb") as f:
+                pickle.dump(docs, f)
 
     sys.exit(0)

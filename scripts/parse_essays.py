@@ -120,7 +120,7 @@ def main(args):
     examples = parse_all(data)
     
     #print(json.dumps(examples, indent=4, ensure_ascii=False, sort_keys=True))
-    with open(args.json, "wt") as f:
+    with open(args.json[:-5]+"_parsed.json", "wt") as f:
         json.dump(examples, f, indent=4, ensure_ascii=False, sort_keys=True)
         
         
