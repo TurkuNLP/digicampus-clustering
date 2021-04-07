@@ -24,10 +24,12 @@
       </ol>
 
       <ul>
-	<li data-toggle="tooltip" data-placement="bottom" title="{{exam.prompt}}">Prompt</li>
+	<!-- <li data-toggle="tooltip" data-placement="bottom" title="{{exam.prompt}}">Prompt</li> -->
+  <li> Prompt</li>
+  {{exam.prompt}}
 	<li>Clusters in this exam: <a href="{{app_root}}/{{exam.id}}/c/TFIDF">[TFIDF]</a> <a href="{{app_root}}/{{exam.id}}/c/BERT">[BERT-NN]</a></li>
       </ul>
-      
+
       {% for answer in exam.docs %}
       <div class="row">
 	<div class="col-3">
@@ -45,7 +47,7 @@
       </div>
 	{% endfor %}
     </div>
-      
+
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
