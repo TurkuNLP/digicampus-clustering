@@ -92,7 +92,7 @@ def map_sentences(sent_list, clustered_lists):
 def load_stop_words():
     from nltk.corpus import stopwords
     stop_words = stopwords.words('finnish')
-    stop_words = stop_words + [',','.','-','esim','voida','myös']
+    stop_words = stop_words + [',','.','-','_','esim','voida','myös','mm']
     return stop_words
 
 def get_keywords(clustered_lists, num_keywords=3):

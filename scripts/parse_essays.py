@@ -94,7 +94,9 @@ def get_orig(conllu):
             elif token[MISC].startswith('SpacesAfter='):
                 orig = orig+token[FORM]+token[MISC][12:]
             else:
-                raise AssertionError("MISC type not known")
+                #raise AssertionError("MISC type not known:", token[MISC])
+                print("MISC type not known:", token[MISC], file=sys.stderr)
+                orig = orig+token[FORM]+" "
         essay.append(orig.replace("\\n","\n").replace("\\s"," "))
     return essay
 
