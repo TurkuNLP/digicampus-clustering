@@ -16,7 +16,7 @@ import tqdm
 import pickle
 from glob import glob
 from read import read_files
-from cluster_sentences import cluster_TFIDF, cluster_BERT, get_keywords, map_sentences
+from cluster_sentences import cluster_TFIDF, cluster_BERT, get_keywords, get_goodness, map_sentences
 
 def init_models():
     global bert_model, bert_tokenizer
@@ -104,6 +104,8 @@ class DocCollection:
         print("Done",file=sys.stderr)
         self.TFIDF_keywords = get_keywords(map_sentences([doc.lemmas for doc in self.docs], TFIDF_clusters_indices))
         self.BERT_keywords = get_keywords(map_sentences([doc.lemmas for doc in self.docs], BERT_clusters_indices))
+        self.TFIDF_goodness = get_goodness(map_sentences([doc.lemmas for doc in self.docs], TFIDF_clusters_indices))
+        self.BERT_goodness = get_goodness(map_sentences([doc.lemmas for doc in self.docs], BERT_clusters_indices))
 
 class CustomUnpickler(pickle.Unpickler):
     """

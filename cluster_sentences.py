@@ -5,14 +5,41 @@ import numpy as np
 from scipy.sparse import issparse
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn import cluster
+from sklearn import metrics
 from pathlib import Path
 
+def approximate_cluster_count(get_clustering, vectors):
+    # lower_bound = max(int(math.log(len(vectors))), 2)
+    lower_bound = min(int(2*math.sqrt(len(vectors))), len(vectors))
+    upper_bound = min(int(7*math.sqrt(len(vectors))), len(vectors))
+    scores = []
+    ch_index_scores = []
+    db_scores = []
+#    for n in range(1, len(vectors), 10):
+#        clustering = get_clustering(n)
+#        score = metrics.silhouette_score(vectors, clustering)
+    for n in range(lower_bound, upper_bound):
+        clustering = get_clustering(n)
+        scores.append(metrics.silhouette_score(vectors, clustering))
+        ch_index_scores.append(metrics.calinski_harabasz_score(vectors, clustering))
+        db_scores.append(metrics.davies_bouldin_score(vectors, clustering))
+    # scores = [metrics.silhouette_score(vectors, get_clustering(n)) for n in range(lower_bound, upper_bound)]
+    formatted_scores = [f"{s:.2f}" for s in scores]
+    formatted_ch_index_scores = [f"{s:.2f}" for s in ch_index_scores]
+    formatted_db_scores = [f"{s:.2f}" for s in db_scores]
+    print(f"Scores for cluster sizes: {scores}")
+    print(f"Calinski-Harabasz index scores for cluster sizes: {ch_index_scores}")
+    print(f"Davies-Bouldin scores for cluster sizes: {db_scores}")
+    return scores.index(max(scores))
+
 def group_cluster(sentence_lists, vectors, num_labels):
-    clustering_model = cluster.AgglomerativeClustering(n_clusters=num_labels if num_labels else 3*int(math.sqrt(len(vectors))))
+    get_clustering = lambda n: cluster.AgglomerativeClustering(n_clusters=n).fit(vectors).labels_
     # clustering_model = cluster.AffinityPropagation(random_state=0, damping=0.7)
-    # clustering_model = cluster.OPTICS(min_samples=2)
+    # get_clustering = lambda _: cluster.OPTICS(min_samples=2).fit(vectors).labels_
     # clustering_model = cluster.KMeans(n_clusters=args.num_labels, random_state=0)
-    clusters = clustering_model.fit(vectors).labels_
+    # clusters = get_clustering(num_labels if num_labels else approximate_cluster_count(get_clustering, vectors))
+    clusters = get_clustering(num_labels if num_labels else int(3*math.sqrt(len(vectors))))
+    # clusters = get_clustering(0)
 
     clustered_lists = []
     i = 0
@@ -67,3 +94,13 @@ def get_keywords(clustered_lists, num_keywords=3):
         cluster_keywords[cluster_id] = [vectorizer.get_feature_names()[i] for i in max_idx if feat_freq[i]!=0]
 
     return cluster_keywords
+
+def get_goodness(clustered_lists):
+    cluster_dict = {}
+    for l in clustered_lists:
+        for s, c in l:
+            cluster_dict.setdefault(c, []).append(s)
+
+    cluster_counts = {k: len(v) for k, v in cluster_dict.items()}
+    sentence_count = sum(cluster_counts.values())
+    return {k : v/sentence_count for k, v in cluster_counts.items()}
