@@ -93,19 +93,19 @@ class Doc:
 
 class DocCollection:
 
-    def __init__(self,doc_dicts):
+    def __init__(self, doc_dicts, cluster_count, goodness_method):
         self.docs=[Doc(doc_dict) for doc_dict in tqdm.tqdm(doc_dicts)]
         self.prompt = "\n".join(set([doc.prompt for doc in self.docs]))
         print("Starting clustering...",file=sys.stderr)
-        TFIDF_clusters_indices = cluster_TFIDF([doc.sent_seg_text for doc in self.docs])
+        TFIDF_clusters_indices, self.TFIDF_goodness = cluster_TFIDF([doc.sent_seg_text for doc in self.docs], cluster_count=cluster_count, goodness_method=goodness_method)
         self.TFIDF_clusters = map_sentences([doc.sent_orig for doc in self.docs], TFIDF_clusters_indices)
-        BERT_clusters_indices = cluster_BERT([doc.bert_embedded for doc in self.docs])
+        BERT_clusters_indices, self.BERT_goodness = cluster_BERT([doc.bert_embedded for doc in self.docs], cluster_count=cluster_count, goodness_method=goodness_method)
         self.BERT_clusters = map_sentences([doc.sent_orig for doc in self.docs], BERT_clusters_indices)
         print("Done",file=sys.stderr)
         self.TFIDF_keywords = get_keywords(map_sentences([doc.lemmas for doc in self.docs], TFIDF_clusters_indices))
         self.BERT_keywords = get_keywords(map_sentences([doc.lemmas for doc in self.docs], BERT_clusters_indices))
-        self.TFIDF_goodness = get_goodness(map_sentences([doc.lemmas for doc in self.docs], TFIDF_clusters_indices))
-        self.BERT_goodness = get_goodness(map_sentences([doc.lemmas for doc in self.docs], BERT_clusters_indices))
+        print(self.TFIDF_goodness)
+        print(self.BERT_goodness)
 
 class CustomUnpickler(pickle.Unpickler):
     """
@@ -125,6 +125,8 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(description="The script takes in globs for json files and outputs a pickle file of the clustering results.")
     parser.add_argument("--json-glob", type=str, required=True, help="Path to json files containing the essays.")
     parser.add_argument("--out-dir", type=str, required=True, help="Path to the pickle file storing the clustering results.")
+    parser.add_argument("--cluster-count", type=str, default='simple', help="What cluster count approximation method to use. Supported values are 'silhouette' and 'simple'. Default: 'simple'.")
+    parser.add_argument("--goodness-method", type=str, default='silhouette', help="How to evaluate cluster goodness. Supported values are 'silhouette' and 'doc-proportion'. Default: 'silhouette'.")
     args = parser.parse_args()
 
     init_models()
@@ -136,7 +138,7 @@ if __name__=="__main__":
     for prompt in all_prompts:
         prompt_data = [d for d in data if d["prompt"]==prompt]
         if len(prompt_data)>9:
-            docs = DocCollection(prompt_data)
+            docs = DocCollection(prompt_data, args.cluster_count, args.goodness_method)
             docs.id=prompt[:10].replace(" ","_") #os.path.basename(files[0]) #FIX! Get the ID from the json!
             # print(docs.TFIDF_keywords)
             #with open(args.out_pickle,"wb") as f:
