@@ -128,7 +128,8 @@ def answer(exam_id,answer_idx,method):
                                        cls,
                                        clust_hues[cls],
                                        clust_values[cls],
-                                       br))
+                                       br,
+                                       goodness[cls]))
 
     return render_template("answer.html",
                             exam=exam,
