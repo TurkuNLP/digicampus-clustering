@@ -13,8 +13,6 @@ import numpy as np
 
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
-#TEMPLATE_ENVIRONMENT = Environment(
-#    keep_trailing_newline=True)
 app.config["KEEP_TRAILING_NEWLINE"] = True
 APP_ROOT = os.environ.get('DIGI_CLUSTERING_ROOT',"")
 app.config["APPLICATION_ROOT"] = APP_ROOT
@@ -46,6 +44,8 @@ def get_clusters_and_kwords(exam,method):
     elif method=="BERT":
         clusters=exam.BERT_clusters
         keywords_lists=exam.BERT_keywords
+    else:
+        raise ValueError("Method not recognized")
 
     keywords={}
     for k,v in keywords_lists.items():
@@ -67,8 +67,32 @@ def cluster(exam_id,method):
     cluster_data=[]
     for k in sorted(keywords.keys()):
         cluster_data.append((k,keywords[k],cl2sentences[k][:10]))
-    
+
     return render_template("clusters.html",exam=exam, cluster_data=cluster_data,examapp_root=APP_ROOT)
+
+@app.route("/<exam_id>/<answer_idx>/<method>/sentence", methods=["POST"])
+def get_sentence_cluster(exam_id, answer_idx, method):
+    global exams
+    exam = exams[exam_id]
+    clusters, keywords = get_clusters_and_kwords(exam, method)
+    answer_idx = [d.id for d in exam.docs].index(answer_idx)
+    sentence_idx = request.json["sentence_id"]
+    sentence_idx = int(sentence_idx.split("_")[-1]) # sentence_idx originally looks like `sentence_12`
+    s_text, cls = clusters[answer_idx][int(sentence_idx)] # get the sentence and its cluster
+
+    cl2sentences={} #clusterid -> [s1,s2,s3,...]
+    for clustered_answer in clusters:
+        for sent_text,cluster_id in clustered_answer:
+            cl2sentences.setdefault(cluster_id,[]).append(sent_text)
+
+    #Again, let's make this easy for ourselves and prep data in python
+    #cluster_data=(cls, keywords[cls], cl2sentences[cls])
+    sentences_html = render_template("sentence.html",
+                            cls=cls,
+                            keywords=keywords[cls],
+                            sentences=cl2sentences[cls],
+                            examapp_root=APP_ROOT)
+    return {"sentences_html": sentences_html}
 
 @app.route("/<exam_id>/e/<answer_idx>/<method>")
 def answer(exam_id,answer_idx,method):
@@ -96,7 +120,17 @@ def answer(exam_id,answer_idx,method):
     sentences_and_clusters=[]
     for s_text,cls in clusters[answer_idx]:
         br = True if s_text.endswith("\n") else False
-        sentences_and_clusters.append((s_text,cls,clust_hues[cls],clust_values[cls],br))
+        sentences_and_clusters.append((len(sentences_and_clusters),
+                                       s_text,
+                                       cls,
+                                       clust_hues[cls],
+                                       clust_values[cls],
+                                       br))
 
-    return render_template("answer.html",exam=exam,answer=answer,sentences_and_clusters=sentences_and_clusters,keywords=keywords,examapp_root=APP_ROOT)
-
+    return render_template("answer.html",
+                            exam=exam,
+                            answer=answer,
+                            method=method,
+                            sentences_and_clusters=sentences_and_clusters,
+                            keywords=keywords,
+                            examapp_root=APP_ROOT)
